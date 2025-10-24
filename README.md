@@ -2,6 +2,8 @@
 
 A standalone HTML webapp for testing and building Mattermost webhook posts and API posts with live preview.
 
+Live on gh-pages here: https://svelle.github.io/mattermost-post-builder/
+
 ## Features
 
 ### 🎨 Live Preview
