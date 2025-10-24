@@ -6,6 +6,42 @@
     <title>Mattermost Webhook Tester</title>
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
     <style>
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #fff;
+            --bg-tertiary: #f8f8f8;
+            --text-primary: #3d3c40;
+            --text-secondary: #666;
+            --text-tertiary: #999;
+            --border-color: #ddd;
+            --border-light: #e8e8e8;
+            --accent-color: #1c58d9;
+            --accent-hover: #1547b3;
+            --error-bg: #fee;
+            --error-text: #c00;
+            --error-border: #fcc;
+            --shadow: rgba(0,0,0,0.08);
+            --shadow-medium: rgba(0,0,0,0.12);
+        }
+
+        body.dark-mode {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #252525;
+            --text-primary: #e4e4e4;
+            --text-secondary: #b8b8b8;
+            --text-tertiary: #888;
+            --border-color: #444;
+            --border-light: #3a3a3a;
+            --accent-color: #4a8dff;
+            --accent-hover: #6ba3ff;
+            --error-bg: #4a1f1f;
+            --error-text: #ff6b6b;
+            --error-border: #6b2f2f;
+            --shadow: rgba(0,0,0,0.3);
+            --shadow-medium: rgba(0,0,0,0.4);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,8 +52,9 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             font-size: 14px;
             line-height: 1.5;
-            color: #3d3c40;
-            background: #f5f5f5;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -33,12 +70,36 @@
         }
 
         .panel-header {
-            background: #1c58d9;
+            background: var(--accent-color);
             color: white;
             padding: 16px 20px;
             font-weight: 600;
             font-size: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            box-shadow: 0 1px 3px var(--shadow-medium);
+        }
+
+        .panel-header-with-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dark-mode-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dark-mode-toggle:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         .panel-content {
@@ -47,38 +108,46 @@
             padding: 20px;
         }
 
+        .panel-content-editor {
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
+            display: flex;
+        }
+
         #jsonInput {
             width: 100%;
-            height: 100%;
+            flex: 1;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 13px;
             padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: none;
+            border-radius: 0;
             resize: none;
-            background: #fff;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         #jsonInput:focus {
             outline: none;
-            border-color: #1c58d9;
-            box-shadow: 0 0 0 3px rgba(28, 88, 217, 0.1);
         }
 
         .examples {
             display: flex;
-            gap: 8px;
-            padding: 12px 20px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .example-btn {
             padding: 6px 12px;
-            background: #fff;
-            border: 1px solid #1c58d9;
-            color: #1c58d9;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
@@ -86,26 +155,28 @@
         }
 
         .example-btn:hover {
-            background: #1c58d9;
+            background: var(--accent-color);
             color: white;
         }
 
         .error {
-            background: #fee;
-            color: #c00;
+            background: var(--error-bg);
+            color: var(--error-text);
             padding: 12px;
             border-radius: 4px;
             margin-bottom: 12px;
-            border: 1px solid #fcc;
+            border: 1px solid var(--error-border);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         /* Post Styles */
         .post-container {
-            background: #fff;
+            background: var(--bg-secondary);
             border-radius: 8px;
             padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px var(--shadow);
             max-width: 800px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .post-header {
@@ -118,14 +189,15 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #3d3c40;
+            background: var(--text-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--bg-secondary);
             font-weight: 600;
             margin-right: 12px;
             flex-shrink: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .post-avatar img {
@@ -141,18 +213,21 @@
 
         .post-author-name {
             font-weight: 600;
-            color: #3d3c40;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .post-timestamp {
             font-size: 12px;
-            color: #999;
+            color: var(--text-tertiary);
+            transition: color 0.3s ease;
         }
 
         .post-message {
             margin-bottom: 12px;
-            color: #3d3c40;
+            color: var(--text-primary);
             word-wrap: break-word;
+            transition: color 0.3s ease;
         }
 
         .post-message p {
@@ -164,8 +239,9 @@
         }
 
         .post-message a {
-            color: #1c58d9;
+            color: var(--accent-color);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
 
         .post-message a:hover {
@@ -174,16 +250,18 @@
 
         /* Attachment Styles */
         .attachment {
-            border-left: 4px solid #ddd;
+            border-left: 4px solid var(--border-color);
             padding: 12px;
             margin: 8px 0;
-            background: #f8f8f8;
+            background: var(--bg-tertiary);
             border-radius: 0 4px 4px 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .attachment-pretext {
             margin-bottom: 8px;
-            color: #3d3c40;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .attachment-author {
@@ -202,7 +280,8 @@
         .attachment-author-name {
             font-size: 12px;
             font-weight: 600;
-            color: #3d3c40;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .attachment-author-name a {
@@ -221,8 +300,9 @@
         }
 
         .attachment-title a {
-            color: #1c58d9;
+            color: var(--accent-color);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
 
         .attachment-title a:hover {
@@ -230,8 +310,9 @@
         }
 
         .attachment-text {
-            color: #3d3c40;
+            color: var(--text-primary);
             margin-bottom: 8px;
+            transition: color 0.3s ease;
         }
 
         .attachment-fields {
@@ -253,12 +334,14 @@
             font-weight: 600;
             font-size: 13px;
             margin-bottom: 4px;
-            color: #3d3c40;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .attachment-field-value {
             font-size: 13px;
-            color: #555;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
 
         .attachment-image {
@@ -291,7 +374,8 @@
             align-items: center;
             margin-top: 8px;
             font-size: 11px;
-            color: #999;
+            color: var(--text-tertiary);
+            transition: color 0.3s ease;
         }
 
         .attachment-footer-icon {
@@ -309,7 +393,7 @@
 
         .attachment-action-button {
             padding: 8px 16px;
-            background: #1c58d9;
+            background: var(--accent-color);
             color: white;
             border: none;
             border-radius: 4px;
@@ -320,27 +404,30 @@
         }
 
         .attachment-action-button:hover {
-            background: #1547b3;
+            background: var(--accent-hover);
         }
 
         .attachment-action-select {
             padding: 8px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            background: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             font-size: 13px;
             cursor: pointer;
             min-width: 120px;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         .attachment-action-select:hover {
-            border-color: #1c58d9;
+            border-color: var(--accent-color);
         }
 
         .empty-state {
             text-align: center;
-            color: #999;
+            color: var(--text-tertiary);
             padding: 60px 20px;
+            transition: color 0.3s ease;
         }
 
         .empty-state-icon {
@@ -351,23 +438,25 @@
         .format-toggle {
             display: flex;
             gap: 0;
-            padding: 12px 20px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             align-items: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .format-toggle-label {
             font-weight: 600;
             margin-right: 12px;
-            color: #3d3c40;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .format-toggle-btn {
             padding: 8px 16px;
-            background: #fff;
-            border: 1px solid #ddd;
-            color: #666;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
@@ -384,23 +473,24 @@
         }
 
         .format-toggle-btn.active {
-            background: #1c58d9;
+            background: var(--accent-color);
             color: white;
-            border-color: #1c58d9;
+            border-color: var(--accent-color);
         }
 
         .format-toggle-btn:hover:not(.active) {
-            background: #f5f5f5;
+            background: var(--bg-tertiary);
         }
 
         .post-metadata {
-            background: #f8f8f8;
-            border: 1px solid #e8e8e8;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
             border-radius: 4px;
             padding: 8px 12px;
             margin-bottom: 12px;
             font-size: 12px;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .post-metadata-item {
@@ -414,26 +504,30 @@
 
         .post-metadata-label {
             font-weight: 600;
-            color: #666;
+            color: var(--text-secondary);
             min-width: 80px;
+            transition: color 0.3s ease;
         }
 
         .post-metadata-value {
-            color: #3d3c40;
+            color: var(--text-primary);
             word-break: break-all;
+            transition: color 0.3s ease;
         }
 
         .builder-section {
-            padding: 12px 20px;
-            background: #f8f8f8;
-            border-bottom: 1px solid #ddd;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .builder-title {
             font-weight: 600;
             font-size: 13px;
-            margin-bottom: 8px;
-            color: #3d3c40;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
 
         .builder-buttons {
@@ -444,9 +538,9 @@
 
         .builder-btn {
             padding: 6px 10px;
-            background: #fff;
-            border: 1px solid #1c58d9;
-            color: #1c58d9;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
@@ -457,7 +551,7 @@
         }
 
         .builder-btn:hover {
-            background: #1c58d9;
+            background: var(--accent-color);
             color: white;
         }
 
@@ -466,7 +560,7 @@
         }
 
         .builder-group {
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .builder-group:last-child {
@@ -474,11 +568,12 @@
         }
 
         .builder-group-label {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 6px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: color 0.3s ease;
         }
     </style>
 </head>
@@ -486,8 +581,9 @@
     <div class="container">
         <!-- Left Panel: JSON Input -->
         <div class="panel">
-            <div class="panel-header">
+            <div class="panel-header panel-header-with-toggle">
                 <span id="panelTitle">Webhook JSON</span>
+                <span></span>
             </div>
             <div class="format-toggle">
                 <span class="format-toggle-label">Format:</span>
@@ -609,15 +705,18 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-content">
+            <div class="panel-content-editor">
                 <textarea id="jsonInput" placeholder="Paste your webhook JSON here..."></textarea>
             </div>
         </div>
 
         <!-- Right Panel: Preview -->
         <div class="panel">
-            <div class="panel-header">
-                Preview
+            <div class="panel-header panel-header-with-toggle">
+                <span>Preview</span>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+                    <span id="darkModeIcon">🌙</span>
+                </button>
             </div>
             <div class="panel-content" id="preview">
                 <div class="empty-state">
@@ -629,6 +728,58 @@
     </div>
 
     <script>
+        // Dark Mode Management
+        function initDarkMode() {
+            // Check for saved preference or default to system preference
+            const savedMode = localStorage.getItem('darkMode');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedMode === 'dark' || (savedMode === null && prefersDark)) {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
+
+            // Listen for system theme changes
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                    // Only auto-switch if user hasn't set a manual preference
+                    if (localStorage.getItem('darkMode') === null) {
+                        if (e.matches) {
+                            enableDarkMode();
+                        } else {
+                            disableDarkMode();
+                        }
+                    }
+                });
+            }
+        }
+
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+            document.getElementById('darkModeIcon').textContent = '☀️';
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('darkModeIcon').textContent = '🌙';
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.body.classList.contains('dark-mode');
+
+            if (isDark) {
+                disableDarkMode();
+                localStorage.setItem('darkMode', 'light');
+            } else {
+                enableDarkMode();
+                localStorage.setItem('darkMode', 'dark');
+            }
+        }
+
+        // Initialize dark mode on page load
+        initDarkMode();
+
         // Configure marked.js for safe rendering
         marked.setOptions({
             breaks: true,
