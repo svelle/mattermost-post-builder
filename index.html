@@ -422,6 +422,64 @@
             color: #3d3c40;
             word-break: break-all;
         }
+
+        .builder-section {
+            padding: 12px 20px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .builder-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #3d3c40;
+        }
+
+        .builder-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .builder-btn {
+            padding: 6px 10px;
+            background: #fff;
+            border: 1px solid #1c58d9;
+            color: #1c58d9;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .builder-btn:hover {
+            background: #1c58d9;
+            color: white;
+        }
+
+        .builder-btn-icon {
+            font-size: 14px;
+        }
+
+        .builder-group {
+            margin-bottom: 10px;
+        }
+
+        .builder-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .builder-group-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -443,6 +501,113 @@
                 <button class="example-btn" onclick="loadExample('actions')">With Actions</button>
                 <button class="example-btn" onclick="loadExample('complete')">Complete Example</button>
                 <button class="example-btn" onclick="clearInput()">Clear</button>
+            </div>
+            <div class="builder-section" id="builderSection">
+                <div class="builder-title">Build Your Post</div>
+                <!-- Webhook builder buttons -->
+                <div id="webhookBuilder" style="display: none;">
+                    <div class="builder-group">
+                        <div class="builder-group-label">Post Properties</div>
+                        <div class="builder-buttons">
+                            <button class="builder-btn" onclick="addUsername()">
+                                <span class="builder-btn-icon">👤</span>Username/Icon
+                            </button>
+                            <button class="builder-btn" onclick="addMessageText()">
+                                <span class="builder-btn-icon">💬</span>Message Text
+                            </button>
+                        </div>
+                    </div>
+                    <div class="builder-group">
+                        <div class="builder-group-label">Attachments</div>
+                        <div class="builder-buttons">
+                            <button class="builder-btn" onclick="addAttachment()">
+                                <span class="builder-btn-icon">📎</span>New Attachment
+                            </button>
+                            <button class="builder-btn" onclick="addAuthor()">
+                                <span class="builder-btn-icon">✍️</span>Author Info
+                            </button>
+                            <button class="builder-btn" onclick="addTitle()">
+                                <span class="builder-btn-icon">📌</span>Title
+                            </button>
+                            <button class="builder-btn" onclick="addPretext()">
+                                <span class="builder-btn-icon">📄</span>Pretext
+                            </button>
+                            <button class="builder-btn" onclick="addText()">
+                                <span class="builder-btn-icon">📝</span>Text
+                            </button>
+                            <button class="builder-btn" onclick="addField()">
+                                <span class="builder-btn-icon">🔢</span>Field
+                            </button>
+                            <button class="builder-btn" onclick="addImage()">
+                                <span class="builder-btn-icon">🖼️</span>Image
+                            </button>
+                            <button class="builder-btn" onclick="addActionButton()">
+                                <span class="builder-btn-icon">🔘</span>Action Button
+                            </button>
+                            <button class="builder-btn" onclick="addActionSelect()">
+                                <span class="builder-btn-icon">📋</span>Action Select
+                            </button>
+                            <button class="builder-btn" onclick="addFooter()">
+                                <span class="builder-btn-icon">👣</span>Footer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- API builder buttons -->
+                <div id="apiBuilder" style="display: none;">
+                    <div class="builder-group">
+                        <div class="builder-group-label">Post Properties</div>
+                        <div class="builder-buttons">
+                            <button class="builder-btn" onclick="addChannelId()">
+                                <span class="builder-btn-icon">📡</span>Channel ID
+                            </button>
+                            <button class="builder-btn" onclick="addRootId()">
+                                <span class="builder-btn-icon">💬</span>Root ID (Reply)
+                            </button>
+                            <button class="builder-btn" onclick="addMessageText()">
+                                <span class="builder-btn-icon">💬</span>Message
+                            </button>
+                            <button class="builder-btn" onclick="addPostType()">
+                                <span class="builder-btn-icon">🏷️</span>Post Type
+                            </button>
+                        </div>
+                    </div>
+                    <div class="builder-group">
+                        <div class="builder-group-label">Attachments</div>
+                        <div class="builder-buttons">
+                            <button class="builder-btn" onclick="addAttachment()">
+                                <span class="builder-btn-icon">📎</span>New Attachment
+                            </button>
+                            <button class="builder-btn" onclick="addAuthor()">
+                                <span class="builder-btn-icon">✍️</span>Author Info
+                            </button>
+                            <button class="builder-btn" onclick="addTitle()">
+                                <span class="builder-btn-icon">📌</span>Title
+                            </button>
+                            <button class="builder-btn" onclick="addPretext()">
+                                <span class="builder-btn-icon">📄</span>Pretext
+                            </button>
+                            <button class="builder-btn" onclick="addText()">
+                                <span class="builder-btn-icon">📝</span>Text
+                            </button>
+                            <button class="builder-btn" onclick="addField()">
+                                <span class="builder-btn-icon">🔢</span>Field
+                            </button>
+                            <button class="builder-btn" onclick="addImage()">
+                                <span class="builder-btn-icon">🖼️</span>Image
+                            </button>
+                            <button class="builder-btn" onclick="addActionButton()">
+                                <span class="builder-btn-icon">🔘</span>Action Button
+                            </button>
+                            <button class="builder-btn" onclick="addActionSelect()">
+                                <span class="builder-btn-icon">📋</span>Action Select
+                            </button>
+                            <button class="builder-btn" onclick="addFooter()">
+                                <span class="builder-btn-icon">👣</span>Footer
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="panel-content">
                 <textarea id="jsonInput" placeholder="Paste your webhook JSON here..."></textarea>
@@ -781,8 +946,293 @@
                     ? 'Paste your webhook JSON here...'
                     : 'Paste your API post JSON here...';
 
+            // Show/hide builder sections
+            if (format === 'webhook') {
+                document.getElementById('webhookBuilder').style.display = 'block';
+                document.getElementById('apiBuilder').style.display = 'none';
+            } else {
+                document.getElementById('webhookBuilder').style.display = 'none';
+                document.getElementById('apiBuilder').style.display = 'block';
+            }
+
             // Clear current content
             clearInput();
+        }
+
+        // Helper: Get current JSON or initialize empty object
+        function getCurrentJSON() {
+            const input = document.getElementById('jsonInput').value.trim();
+            if (!input) {
+                if (currentFormat === 'webhook') {
+                    return {};
+                } else {
+                    return {
+                        channel_id: "",
+                        message: "",
+                        root_id: ""
+                    };
+                }
+            }
+            try {
+                return JSON.parse(input);
+            } catch (e) {
+                alert('Invalid JSON in editor. Please fix it first or clear to start fresh.');
+                return null;
+            }
+        }
+
+        // Helper: Update JSON in textarea
+        function updateJSON(json) {
+            document.getElementById('jsonInput').value = JSON.stringify(json, null, 2);
+            renderPreview();
+        }
+
+        // Helper: Ensure attachments array exists
+        function ensureAttachments(json) {
+            if (currentFormat === 'webhook') {
+                if (!json.attachments) {
+                    json.attachments = [];
+                }
+                return json.attachments;
+            } else {
+                if (!json.props) {
+                    json.props = {};
+                }
+                if (!json.props.attachments) {
+                    json.props.attachments = [];
+                }
+                return json.props.attachments;
+            }
+        }
+
+        // Builder Functions - Post Properties
+        function addUsername() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            if (currentFormat === 'webhook') {
+                json.username = "Bot Name";
+                json.icon_url = "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png";
+            }
+            updateJSON(json);
+        }
+
+        function addMessageText() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            if (currentFormat === 'webhook') {
+                json.text = "Your message text here with **markdown** support";
+            } else {
+                json.message = "Your message text here with **markdown** support";
+            }
+            updateJSON(json);
+        }
+
+        function addChannelId() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            json.channel_id = "your-channel-id-here";
+            updateJSON(json);
+        }
+
+        function addRootId() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            json.root_id = "parent-post-id-for-reply";
+            updateJSON(json);
+        }
+
+        function addPostType() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            json.type = "custom_post_type";
+            updateJSON(json);
+        }
+
+        // Builder Functions - Attachments
+        function addAttachment() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            attachments.push({
+                color: "#0066cc",
+                text: "New attachment"
+            });
+            updateJSON(json);
+        }
+
+        function addAuthor() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.author_name = "Author Name";
+            lastAttachment.author_icon = "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png";
+            lastAttachment.author_link = "https://example.com";
+            updateJSON(json);
+        }
+
+        function addTitle() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.title = "Attachment Title";
+            lastAttachment.title_link = "https://example.com";
+            updateJSON(json);
+        }
+
+        function addPretext() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.pretext = "This text appears above the attachment";
+            updateJSON(json);
+        }
+
+        function addText() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.text = "Attachment text with **markdown** support";
+            updateJSON(json);
+        }
+
+        function addField() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            if (!lastAttachment.fields) {
+                lastAttachment.fields = [];
+            }
+            lastAttachment.fields.push({
+                title: "Field Title",
+                value: "Field Value",
+                short: true
+            });
+            updateJSON(json);
+        }
+
+        function addImage() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.image_url = "https://via.placeholder.com/600x300";
+            lastAttachment.thumb_url = "https://via.placeholder.com/80x80";
+            updateJSON(json);
+        }
+
+        function addActionButton() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            if (!lastAttachment.actions) {
+                lastAttachment.actions = [];
+            }
+            lastAttachment.actions.push({
+                name: "Button Name",
+                integration: {
+                    url: "https://example.com/action"
+                }
+            });
+            updateJSON(json);
+        }
+
+        function addActionSelect() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            if (!lastAttachment.actions) {
+                lastAttachment.actions = [];
+            }
+            lastAttachment.actions.push({
+                name: "Select Option",
+                type: "select",
+                integration: {
+                    url: "https://example.com/action"
+                },
+                options: [
+                    { text: "Option 1", value: "option1" },
+                    { text: "Option 2", value: "option2" },
+                    { text: "Option 3", value: "option3" }
+                ]
+            });
+            updateJSON(json);
+        }
+
+        function addFooter() {
+            const json = getCurrentJSON();
+            if (!json) return;
+
+            const attachments = ensureAttachments(json);
+            if (attachments.length === 0) {
+                alert('Please add an attachment first');
+                return;
+            }
+
+            const lastAttachment = attachments[attachments.length - 1];
+            lastAttachment.footer = "Footer text";
+            lastAttachment.footer_icon = "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png";
+            updateJSON(json);
         }
 
         // Load example
@@ -1029,6 +1479,8 @@
 
         // Load a default example on page load
         window.addEventListener('load', () => {
+            // Show webhook builder by default
+            document.getElementById('webhookBuilder').style.display = 'block';
             loadExample('complete');
         });
     </script>
