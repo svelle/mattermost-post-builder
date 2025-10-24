@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mattermost Webhook Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #3d3c40;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #1c58d9;
+            color: white;
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        #jsonInput {
+            width: 100%;
+            height: 100%;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+            background: #fff;
+        }
+
+        #jsonInput:focus {
+            outline: none;
+            border-color: #1c58d9;
+            box-shadow: 0 0 0 3px rgba(28, 88, 217, 0.1);
+        }
+
+        .examples {
+            display: flex;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .example-btn {
+            padding: 6px 12px;
+            background: #fff;
+            border: 1px solid #1c58d9;
+            color: #1c58d9;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .example-btn:hover {
+            background: #1c58d9;
+            color: white;
+        }
+
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            border: 1px solid #fcc;
+        }
+
+        /* Post Styles */
+        .post-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            max-width: 800px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .post-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #3d3c40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .post-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-author-info {
+            flex: 1;
+        }
+
+        .post-author-name {
+            font-weight: 600;
+            color: #3d3c40;
+        }
+
+        .post-timestamp {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .post-message {
+            margin-bottom: 12px;
+            color: #3d3c40;
+            word-wrap: break-word;
+        }
+
+        .post-message p {
+            margin: 0 0 8px 0;
+        }
+
+        .post-message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .post-message a {
+            color: #1c58d9;
+            text-decoration: none;
+        }
+
+        .post-message a:hover {
+            text-decoration: underline;
+        }
+
+        /* Attachment Styles */
+        .attachment {
+            border-left: 4px solid #ddd;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f8f8;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .attachment-pretext {
+            margin-bottom: 8px;
+            color: #3d3c40;
+        }
+
+        .attachment-author {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .attachment-author-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .attachment-author-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3d3c40;
+        }
+
+        .attachment-author-name a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .attachment-author-name a:hover {
+            text-decoration: underline;
+        }
+
+        .attachment-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .attachment-title a {
+            color: #1c58d9;
+            text-decoration: none;
+        }
+
+        .attachment-title a:hover {
+            text-decoration: underline;
+        }
+
+        .attachment-text {
+            color: #3d3c40;
+            margin-bottom: 8px;
+        }
+
+        .attachment-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .attachment-field {
+            padding: 8px 0;
+        }
+
+        .attachment-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .attachment-field-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #3d3c40;
+        }
+
+        .attachment-field-value {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .attachment-image {
+            margin: 8px 0;
+            max-width: 100%;
+            border-radius: 4px;
+        }
+
+        .attachment-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .attachment-thumb {
+            float: right;
+            margin: 0 0 8px 8px;
+            max-width: 80px;
+        }
+
+        .attachment-thumb img {
+            max-width: 80px;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .attachment-footer {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .attachment-footer-icon {
+            width: 12px;
+            height: 12px;
+            margin-right: 4px;
+        }
+
+        .attachment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .attachment-action-button {
+            padding: 8px 16px;
+            background: #1c58d9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .attachment-action-button:hover {
+            background: #1547b3;
+        }
+
+        .attachment-action-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .attachment-action-select:hover {
+            border-color: #1c58d9;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .format-toggle {
+            display: flex;
+            gap: 0;
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+        }
+
+        .format-toggle-label {
+            font-weight: 600;
+            margin-right: 12px;
+            color: #3d3c40;
+        }
+
+        .format-toggle-btn {
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #666;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .format-toggle-btn:first-of-type {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .format-toggle-btn:last-of-type {
+            border-radius: 0 4px 4px 0;
+            border-left: none;
+        }
+
+        .format-toggle-btn.active {
+            background: #1c58d9;
+            color: white;
+            border-color: #1c58d9;
+        }
+
+        .format-toggle-btn:hover:not(.active) {
+            background: #f5f5f5;
+        }
+
+        .post-metadata {
+            background: #f8f8f8;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .post-metadata-item {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .post-metadata-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .post-metadata-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .post-metadata-value {
+            color: #3d3c40;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: JSON Input -->
+        <div class="panel">
+            <div class="panel-header">
+                <span id="panelTitle">Webhook JSON</span>
+            </div>
+            <div class="format-toggle">
+                <span class="format-toggle-label">Format:</span>
+                <button class="format-toggle-btn active" onclick="setFormat('webhook')">Webhook</button>
+                <button class="format-toggle-btn" onclick="setFormat('api')">API Post</button>
+            </div>
+            <div class="examples">
+                <button class="example-btn" onclick="loadExample('simple')">Simple Post</button>
+                <button class="example-btn" onclick="loadExample('attachment')">With Attachment</button>
+                <button class="example-btn" onclick="loadExample('fields')">With Fields</button>
+                <button class="example-btn" onclick="loadExample('actions')">With Actions</button>
+                <button class="example-btn" onclick="loadExample('complete')">Complete Example</button>
+                <button class="example-btn" onclick="clearInput()">Clear</button>
+            </div>
+            <div class="panel-content">
+                <textarea id="jsonInput" placeholder="Paste your webhook JSON here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="panel">
+            <div class="panel-header">
+                Preview
+            </div>
+            <div class="panel-content" id="preview">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <div>Paste webhook JSON to see preview</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configure marked.js for safe rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
+
+        // Current format
+        let currentFormat = 'webhook';
+
+        // Examples - Webhook format
+        const webhookExamples = {
+            simple: {
+                text: "Hello, this is a simple webhook message with **markdown** support!"
+            },
+            attachment: {
+                text: "Check out this notification:",
+                attachments: [{
+                    color: "#36a64f",
+                    pretext: "This is pretext that appears above the attachment",
+                    author_name: "System Bot",
+                    author_icon: "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png",
+                    title: "Attachment Title",
+                    title_link: "https://mattermost.com",
+                    text: "This is the attachment text with **markdown** support. It can contain _formatting_ and [links](https://example.com)."
+                }]
+            },
+            fields: {
+                text: "Deployment Status Report",
+                attachments: [{
+                    color: "#2196F3",
+                    title: "Production Deployment",
+                    fields: [
+                        {
+                            title: "Environment",
+                            value: "Production",
+                            short: true
+                        },
+                        {
+                            title: "Status",
+                            value: "Success",
+                            short: true
+                        },
+                        {
+                            title: "Version",
+                            value: "v2.4.0",
+                            short: true
+                        },
+                        {
+                            title: "Duration",
+                            value: "3m 42s",
+                            short: true
+                        },
+                        {
+                            title: "Description",
+                            value: "Deployed with new features and bug fixes. All tests passed successfully.",
+                            short: false
+                        }
+                    ]
+                }]
+            },
+            actions: {
+                text: "Please approve this request:",
+                attachments: [{
+                    color: "#ff9800",
+                    title: "Expense Approval Required",
+                    text: "New expense report submitted by John Doe for $1,250.00",
+                    actions: [
+                        {
+                            name: "Approve",
+                            integration: {
+                                url: "https://example.com/approve"
+                            }
+                        },
+                        {
+                            name: "Reject",
+                            integration: {
+                                url: "https://example.com/reject"
+                            }
+                        },
+                        {
+                            name: "Priority",
+                            type: "select",
+                            integration: {
+                                url: "https://example.com/priority"
+                            },
+                            options: [
+                                { text: "High", value: "high" },
+                                { text: "Medium", value: "medium" },
+                                { text: "Low", value: "low" }
+                            ]
+                        }
+                    ]
+                }]
+            },
+            complete: {
+                username: "Monitoring Bot",
+                icon_url: "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png",
+                text: "Server alert triggered",
+                attachments: [{
+                    color: "#dc3545",
+                    pretext: "Alert from monitoring system at " + new Date().toLocaleString(),
+                    author_name: "Monitoring System",
+                    author_link: "https://monitoring.example.com",
+                    author_icon: "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png",
+                    title: "High CPU Usage Detected",
+                    title_link: "https://monitoring.example.com/alerts/12345",
+                    text: "CPU usage has exceeded **90%** for more than 5 minutes on server `prod-web-01`.\n\nImmediate action may be required.",
+                    fields: [
+                        {
+                            title: "Server",
+                            value: "prod-web-01",
+                            short: true
+                        },
+                        {
+                            title: "CPU Usage",
+                            value: "94%",
+                            short: true
+                        },
+                        {
+                            title: "Memory Usage",
+                            value: "78%",
+                            short: true
+                        },
+                        {
+                            title: "Uptime",
+                            value: "45 days",
+                            short: true
+                        },
+                        {
+                            title: "Threshold",
+                            value: "Alert triggered when CPU > 90% for 5+ minutes",
+                            short: false
+                        }
+                    ],
+                    footer: "Monitoring Dashboard",
+                    footer_icon: "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png",
+                    actions: [
+                        {
+                            name: "View Details",
+                            integration: {
+                                url: "https://monitoring.example.com/alerts/12345"
+                            }
+                        },
+                        {
+                            name: "Acknowledge",
+                            integration: {
+                                url: "https://monitoring.example.com/ack"
+                            }
+                        },
+                        {
+                            name: "Restart Server",
+                            integration: {
+                                url: "https://monitoring.example.com/restart"
+                            }
+                        }
+                    ]
+                }]
+            }
+        };
+
+        // Examples - API Post format
+        const apiExamples = {
+            simple: {
+                channel_id: "abcdefghijklmnopqrstuvwxyz",
+                message: "Hello, this is a simple API post message with **markdown** support!",
+                root_id: ""
+            },
+            attachment: {
+                channel_id: "abcdefghijklmnopqrstuvwxyz",
+                message: "Check out this notification:",
+                root_id: "",
+                props: {
+                    attachments: [{
+                        color: "#36a64f",
+                        pretext: "This is pretext that appears above the attachment",
+                        author_name: "System Bot",
+                        author_icon: "https://www.mattermost.com/wp-content/uploads/2022/02/icon.png",
+                        title: "Attachment Title",
+                        title_link: "https://mattermost.com",
+                        text: "This is the attachment text with **markdown** support. It can contain _formatting_ and [links](https://example.com)."
+                    }]
+                }
+            },
+            fields: {
+                channel_id: "abcdefghijklmnopqrstuvwxyz",
+                message: "Deployment Status Report",
+                root_id: "",
+                props: {
+                    attachments: [{
+                        color: "#2196F3",
+                        title: "Production Deployment",
+                        fields: [
+                            {
+                                title: "Environment",
+                                value: "Production",
+                                short: true
+                            },
+                            {
+                                title: "Status",
+                                value: "Success",
+                                short: true
+                            },
+                            {
+                                title: "Version",
+                                value: "v2.4.0",
+                                short: true
+                            },
+                            {
+                                title: "Duration",
+                                value: "3m 42s",
+                                short: true
+                            },
+                            {
+                                title: "Description",
+                                value: "Deployed with new features and bug fixes. All tests passed successfully.",
+                                short: false
+                            }
+                        ]
+                    }]
+                }
+            },
+            actions: {
+                channel_id: "abcdefghijklmnopqrstuvwxyz",
+                message: "Please approve this request:",
+                root_id: "",
+                props: {
+                    attachments: [{
+                        color: "#ff9800",
+                        title: "Expense Approval Required",
+                        text: "New expense report submitted by John Doe for $1,250.00",
+                        actions: [
+                            {
+                                name: "Approve",
+                                integration: {
+                                    url: "https://example.com/approve"
+                                }
+                            },
+                            {
+                                name: "Reject",
+                                integration: {
+                                    url: "https://example.com/reject"
+                                }
+                            },
+                            {
+                                name: "Priority",
+                                type: "select",
+                                integration: {
+                                    url: "https://example.com/priority"
+                                },
+                                options: [
+                                    { text: "High", value: "high" },
+                                    { text: "Medium", value: "medium" },
+                                    { text: "Low", value: "low" }
+                                ]
+                            }
+                        ]
+                    }]
+                },
+                type: "custom_expense_approval"
+            },
+            complete: {
+                channel_id: "bjbkcdpcsidgbjbq3bn6ur9dow",
+                root_id: "",
+                message: "New High/Urgent Customer Ticket",
+                props: {
+                    attachments: [{
+                        fallback: "New Ticket Reply",
+                        color: "#14213d",
+                        author_name: "sven@mattermost.com (Sven)",
+                        title: "New Reply (Mattermost)",
+                        title_link: "https://mattermost1736516213.zendesk.com/agent/tickets/56",
+                        text: "A new ticket has been created.",
+                        fields: [
+                            {
+                                short: true,
+                                title: "Current Status",
+                                value: "New"
+                            },
+                            {
+                                short: true,
+                                title: "Current Assignee",
+                                value: ""
+                            },
+                            {
+                                short: false,
+                                title: "Description",
+                                value: ""
+                            }
+                        ]
+                    }]
+                },
+                type: "custom_zendesk_ticket_notification"
+            }
+        };
+
+        // Set format
+        function setFormat(format) {
+            currentFormat = format;
+
+            // Update toggle buttons
+            document.querySelectorAll('.format-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update panel title
+            document.getElementById('panelTitle').textContent =
+                format === 'webhook' ? 'Webhook JSON' : 'API Post JSON';
+
+            // Update placeholder
+            document.getElementById('jsonInput').placeholder =
+                format === 'webhook'
+                    ? 'Paste your webhook JSON here...'
+                    : 'Paste your API post JSON here...';
+
+            // Clear current content
+            clearInput();
+        }
+
+        // Load example
+        function loadExample(type) {
+            const examples = currentFormat === 'webhook' ? webhookExamples : apiExamples;
+            const example = examples[type];
+            if (example) {
+                document.getElementById('jsonInput').value = JSON.stringify(example, null, 2);
+                renderPreview();
+            }
+        }
+
+        // Clear input
+        function clearInput() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('preview').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <div>Paste webhook JSON to see preview</div>
+                </div>
+            `;
+        }
+
+        // Sanitize and render markdown
+        function renderMarkdown(text) {
+            if (!text) return '';
+            return marked.parse(text);
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Render attachment
+        function renderAttachment(attachment) {
+            const color = attachment.color || '#ddd';
+            let html = `<div class="attachment" style="border-left-color: ${escapeHtml(color)};">`;
+
+            // Pretext
+            if (attachment.pretext) {
+                html += `<div class="attachment-pretext">${renderMarkdown(attachment.pretext)}</div>`;
+            }
+
+            // Author
+            if (attachment.author_name) {
+                html += '<div class="attachment-author">';
+                if (attachment.author_icon) {
+                    html += `<img class="attachment-author-icon" src="${escapeHtml(attachment.author_icon)}" alt="">`;
+                }
+                html += '<div class="attachment-author-name">';
+                if (attachment.author_link) {
+                    html += `<a href="${escapeHtml(attachment.author_link)}" target="_blank">${escapeHtml(attachment.author_name)}</a>`;
+                } else {
+                    html += escapeHtml(attachment.author_name);
+                }
+                html += '</div></div>';
+            }
+
+            // Thumbnail (floated right)
+            if (attachment.thumb_url) {
+                html += `<div class="attachment-thumb"><img src="${escapeHtml(attachment.thumb_url)}" alt=""></div>`;
+            }
+
+            // Title
+            if (attachment.title) {
+                html += '<div class="attachment-title">';
+                if (attachment.title_link) {
+                    html += `<a href="${escapeHtml(attachment.title_link)}" target="_blank">${escapeHtml(attachment.title)}</a>`;
+                } else {
+                    html += escapeHtml(attachment.title);
+                }
+                html += '</div>';
+            }
+
+            // Text
+            if (attachment.text) {
+                html += `<div class="attachment-text">${renderMarkdown(attachment.text)}</div>`;
+            }
+
+            // Fields
+            if (attachment.fields && attachment.fields.length > 0) {
+                html += '<div class="attachment-fields">';
+                attachment.fields.forEach(field => {
+                    const fullWidth = !field.short;
+                    html += `<div class="attachment-field ${fullWidth ? 'full-width' : ''}">`;
+                    if (field.title) {
+                        html += `<div class="attachment-field-title">${escapeHtml(field.title)}</div>`;
+                    }
+                    if (field.value) {
+                        const value = typeof field.value === 'string' ? field.value : JSON.stringify(field.value);
+                        html += `<div class="attachment-field-value">${renderMarkdown(value)}</div>`;
+                    }
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            // Image (full width)
+            if (attachment.image_url) {
+                html += `<div class="attachment-image"><img src="${escapeHtml(attachment.image_url)}" alt=""></div>`;
+            }
+
+            // Actions
+            if (attachment.actions && attachment.actions.length > 0) {
+                html += '<div class="attachment-actions">';
+                attachment.actions.forEach(action => {
+                    if (action.type === 'select') {
+                        html += `<select class="attachment-action-select">`;
+                        html += `<option>${escapeHtml(action.name || 'Select...')}</option>`;
+                        if (action.options) {
+                            action.options.forEach(option => {
+                                html += `<option value="${escapeHtml(option.value || '')}">${escapeHtml(option.text || option.value)}</option>`;
+                            });
+                        }
+                        html += '</select>';
+                    } else {
+                        html += `<button class="attachment-action-button">${escapeHtml(action.name || 'Action')}</button>`;
+                    }
+                });
+                html += '</div>';
+            }
+
+            // Footer
+            if (attachment.footer) {
+                html += '<div class="attachment-footer">';
+                if (attachment.footer_icon) {
+                    html += `<img class="attachment-footer-icon" src="${escapeHtml(attachment.footer_icon)}" alt="">`;
+                }
+                html += escapeHtml(attachment.footer);
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // Render preview
+        function renderPreview() {
+            const input = document.getElementById('jsonInput').value.trim();
+            const preview = document.getElementById('preview');
+
+            if (!input) {
+                preview.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div>Paste ${currentFormat === 'webhook' ? 'webhook' : 'API post'} JSON to see preview</div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const data = JSON.parse(input);
+                let html = '<div class="post-container">';
+
+                // For API posts, show metadata
+                if (currentFormat === 'api') {
+                    html += '<div class="post-metadata">';
+                    if (data.channel_id) {
+                        html += '<div class="post-metadata-item">';
+                        html += '<span class="post-metadata-label">Channel ID:</span>';
+                        html += `<span class="post-metadata-value">${escapeHtml(data.channel_id)}</span>`;
+                        html += '</div>';
+                    }
+                    if (data.root_id) {
+                        html += '<div class="post-metadata-item">';
+                        html += '<span class="post-metadata-label">Root ID:</span>';
+                        html += `<span class="post-metadata-value">${escapeHtml(data.root_id)}</span>`;
+                        html += '</div>';
+                    }
+                    if (data.type) {
+                        html += '<div class="post-metadata-item">';
+                        html += '<span class="post-metadata-label">Type:</span>';
+                        html += `<span class="post-metadata-value">${escapeHtml(data.type)}</span>`;
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                }
+
+                // Post header
+                html += '<div class="post-header">';
+                html += '<div class="post-avatar">';
+                if (data.icon_url) {
+                    html += `<img src="${escapeHtml(data.icon_url)}" alt="">`;
+                } else if (currentFormat === 'webhook') {
+                    html += 'W';
+                } else {
+                    html += 'U';
+                }
+                html += '</div>';
+                html += '<div class="post-author-info">';
+
+                const username = currentFormat === 'webhook'
+                    ? (data.username || 'Webhook')
+                    : 'User';
+
+                html += `<div class="post-author-name">${escapeHtml(username)}</div>`;
+                html += `<div class="post-timestamp">${new Date().toLocaleTimeString()}</div>`;
+                html += '</div>';
+                html += '</div>';
+
+                // Post message - handle both 'text' (webhook) and 'message' (API)
+                const messageText = data.text || data.message;
+                if (messageText) {
+                    // Remove surrounding quotes if present (API posts often have quoted messages)
+                    const cleanedText = messageText.replace(/^["']|["']$/g, '');
+                    html += `<div class="post-message">${renderMarkdown(cleanedText)}</div>`;
+                }
+
+                // Attachments - handle both direct attachments (webhook) and props.attachments (API)
+                let attachments = null;
+                if (currentFormat === 'webhook' && data.attachments && Array.isArray(data.attachments)) {
+                    attachments = data.attachments;
+                } else if (currentFormat === 'api' && data.props && data.props.attachments && Array.isArray(data.props.attachments)) {
+                    attachments = data.props.attachments;
+                }
+
+                if (attachments) {
+                    attachments.forEach(attachment => {
+                        html += renderAttachment(attachment);
+                    });
+                }
+
+                html += '</div>';
+                preview.innerHTML = html;
+            } catch (error) {
+                preview.innerHTML = `
+                    <div class="error">
+                        <strong>Invalid JSON:</strong> ${escapeHtml(error.message)}
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div>Please check your JSON syntax</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-update preview on input
+        document.getElementById('jsonInput').addEventListener('input', renderPreview);
+
+        // Load a default example on page load
+        window.addEventListener('load', () => {
+            loadExample('complete');
+        });
+    </script>
+</body>
+</html>
